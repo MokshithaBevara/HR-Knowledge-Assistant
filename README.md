@@ -87,3 +87,9 @@ The objective of this project is to demonstrate how Retrieval-Augmented Generati
 - Improved retrieval accuracy.
 - Source references for generated answers.
 - Document upload functionality.
+
+## Community
+
+Built as part of my AI development journey.
+
+GrowthX Off Campus Code: B4AFFT
