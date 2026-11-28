@@ -1,50 +1,87 @@
-# HR Knowledge Assistant
+# 📚 HR Knowledge Assistant
 
-A Retrieval-Augmented Generation (RAG) based AI application that helps employees find accurate answers to HR-related questions using company handbook documents.
+An AI-powered HR knowledge assistant built using Retrieval-Augmented Generation (RAG). It enables employees to ask questions about company policies in natural language and receive context-aware answers grounded in HR handbook documents.
 
 ## 📌 Project Overview
 
-HR Knowledge Assistant simplifies access to company HR policies by allowing employees to ask questions in natural language.
+Finding specific information in lengthy HR handbooks can be time-consuming.
 
-The application uses semantic search to retrieve relevant information from HR handbook documents and generates context-aware responses using a Large Language Model (LLM).
+The HR Knowledge Assistant addresses this problem by combining semantic search, vector databases, and Large Language Models (LLMs) to retrieve relevant handbook information and generate answers based on the retrieved context.
+
+The application also supports conversational follow-up questions and displays the relevant HR handbook sections used to generate responses.
 
 ## ✨ Features
 
-- **HR Policy Question Answering:** Get answers to questions about company policies.
-- **Retrieval-Augmented Generation (RAG):** Generates responses using retrieved handbook information.
-- **Semantic Search:** Finds relevant content based on the meaning of queries.
+- **HR Policy Question Answering:** Ask questions about company policies using natural language.
+- **Retrieval-Augmented Generation:** Generates answers grounded in retrieved handbook content.
+- **Semantic Search:** Retrieves relevant information based on query meaning.
+- **Local Text Embeddings:** Generates embeddings using Ollama and the `nomic-embed-text` model.
 - **Vector Database:** Stores and retrieves document embeddings using ChromaDB.
-- **AI-Powered Responses:** Integrates Groq API for response generation.
-- **Interactive Interface:** Chat-based interface built with Streamlit.
+- **Conversational Follow-ups:** Understands contextual questions using conversation history.
+- **Source References:** Displays relevant HR handbook section names.
+- **Relevance Filtering:** Filters retrieved chunks using similarity distance.
+- **Interactive Chat Interface:** Provides a conversational interface using Streamlit.
 
 ## 🛠️ Tech Stack
 
 | Technology | Purpose |
 |---|---|
 | Python | Application development |
-| Streamlit | User interface |
-| ChromaDB | Vector database |
-| Sentence Transformers | Text embeddings |
+| Streamlit | Interactive user interface |
+| Ollama | Local embedding generation |
+| nomic-embed-text | Text embedding model |
+| ChromaDB | Vector storage and semantic retrieval |
 | Groq API | LLM-powered response generation |
+| Git & GitHub | Version control |
 
 ## ⚙️ How It Works
 
-1. **Document Processing:** HR handbook documents are loaded and processed.
-2. **Text Embedding:** Sentence Transformers converts text into numerical embeddings.
-3. **Vector Storage:** Embeddings are stored in ChromaDB.
-4. **Semantic Retrieval:** Relevant handbook sections are retrieved based on the user's query.
-5. **Response Generation:** Retrieved context is passed to the Groq-powered LLM to generate an appropriate response.
-6. **User Interaction:** Answers are displayed through the Streamlit chat interface.
+The application follows a Retrieval-Augmented Generation workflow.
 
-## 📸 Application Screenshot
+1. **Document Loading:** Loads the HR handbook from the data directory.
+2. **Text Splitting:** Divides the handbook into smaller chunks while preserving section headings.
+3. **Embedding Generation:** Uses Ollama's `nomic-embed-text` model to convert text chunks into numerical embeddings.
+4. **Vector Storage:** Stores document chunks, embeddings, and section metadata in ChromaDB.
+5. **Query Processing:** Converts user questions into embeddings and searches for semantically relevant chunks.
+6. **Context Preparation:** Passes retrieved handbook content to the language model.
+7. **Response Generation:** Uses the Groq API to generate answers based on the retrieved context.
+8. **Conversational Retrieval:** Rewrites follow-up questions into standalone questions using conversation history.
+9. **Source References:** Displays the handbook sections associated with retrieved information.
 
-![HR Knowledge Assistant](https://github.com/user-attachments/assets/4d92ca0f-be75-4765-9c5b-d839d0800758)
+## 🏗️ Project Structure
+
+```text
+HR-Knowledge-Assistant/
+│
+├── app.py
+├── requirements.txt
+├── .gitignore
+│
+├── data/
+│   └── Hrhandbook.txt
+│
+├── src/
+│   ├── config.py
+│   ├── document_loader.py
+│   ├── text_splitter.py
+│   ├── embeddings.py
+│   ├── vector_store.py
+│   ├── ingest.py
+│   ├── retriever.py
+│   └── rag_pipeline.py
+│
+├── test_embeddings.py
+├── test_ollama.py
+├── test_rag.py
+└── test_retrieval.py
+```
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-- Python 3.9 or later
+- Python 3.12
+- Ollama
 - Groq API key
 
 ### Installation
@@ -61,32 +98,82 @@ git clone https://github.com/MokshithaBevara/HR-Knowledge-Assistant.git
 cd HR-Knowledge-Assistant
 ```
 
-**3. Install dependencies**
+**3. Create and activate a virtual environment**
+
+```bash
+python -m venv .venv
+```
+
+Windows:
+
+```powershell
+.venv\Scripts\activate
+```
+
+**4. Install dependencies**
 
 ```bash
 pip install -r requirements.txt
 ```
 
-**4. Configure your Groq API key**
+**5. Set up Ollama**
 
-Configure your Groq API key using the method expected by your application. Never commit API keys or other secrets to GitHub.
+Install Ollama and download the embedding model:
 
-**5. Run the application**
+```bash
+ollama pull nomic-embed-text
+```
+
+Make sure the Ollama service is running before starting the application.
+
+**6. Configure the Groq API key**
+
+Create a `.streamlit/secrets.toml` file and add:
+
+```toml
+GROQ_API_KEY = "your_groq_api_key"
+```
+
+Never upload this file or expose your API key publicly.
+
+**7. Index the HR handbook**
+
+Run:
+
+```bash
+python -m src.ingest
+```
+
+This processes the handbook, generates embeddings, and stores the indexed documents in ChromaDB.
+
+**8. Run the application**
 
 ```bash
 streamlit run app.py
 ```
 
-## 🎯 Project Objective
+Open the local URL displayed in your terminal.
 
-The objective of this project is to demonstrate how Retrieval-Augmented Generation, semantic search and vector databases can be combined to build a practical AI-powered document question-answering application.
+## 🧪 Testing
+
+The project includes separate scripts for testing important components:
+
+- `test_embeddings.py` – Tests local embedding generation.
+- `test_ollama.py` – Checks Ollama integration.
+- `test_retrieval.py` – Tests semantic document retrieval.
+- `test_rag.py` – Tests the RAG answer-generation pipeline.
 
 ## 🔮 Future Improvements
 
-- Support for multiple document formats.
-- Improved retrieval accuracy.
-- Source references for generated answers.
-- Document upload functionality.
+- Support for PDF and additional document formats.
+- Improved retrieval accuracy and contextual relevance.
+- More advanced document management.
+- Enhanced source-level citations.
+- Deployment for wider accessibility.
+
+## 🎯 Project Objective
+
+This project demonstrates the practical implementation of Retrieval-Augmented Generation by integrating local embedding models, semantic search, vector databases, and LLM-powered response generation into an interactive document question-answering application.
 
 ## Community
 
