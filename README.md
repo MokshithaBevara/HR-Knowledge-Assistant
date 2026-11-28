@@ -22,6 +22,10 @@ The application also supports conversational follow-up questions and displays th
 - **Relevance Filtering:** Filters retrieved chunks using similarity distance.
 - **Interactive Chat Interface:** Provides a conversational interface using Streamlit.
 
+## 📸 Application Screenshot
+
+![HR Knowledge Assistant](https://github.com/user-attachments/assets/4d92ca0f-be75-4765-9c5b-d839d0800758)
+
 ## 🛠️ Tech Stack
 
 | Technology | Purpose |
