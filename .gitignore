@@ -1,0 +1,18 @@
+# Environment
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# API keys and secrets
+.streamlit/secrets.toml
+.env
+
+# Local vector database
+chroma_db/
+
+# IDE
+.vscode/
+
+# Python cache
+.pytest_cache/

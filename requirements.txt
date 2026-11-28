@@ -1,4 +1,5 @@
 streamlit
 chromadb
-sentence-transformers
 groq
+ollama
+python-dotenv

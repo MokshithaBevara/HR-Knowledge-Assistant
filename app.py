@@ -1,144 +1,78 @@
-```python
-import os
 import streamlit as st
-import chromadb
 from groq import Groq
-from chromadb.utils import embedding_functions
 
+from src.rag_pipeline import generate_answer
+
+# Page configuration
 st.set_page_config(
-    page_title="DocuChat HR Assistant",
+    page_title="HR Knowledge Assistant",
+    page_icon="📚",
     layout="centered"
 )
 
-st.title("📄 DocuChat HR Assistant")
-st.write("Ask questions about company HR policies and handbook information.")
+# Initialize Groq
+client = Groq(
+    api_key=st.secrets["GROQ_API_KEY"]
+)
 
-# ---------------------------
-# API Key
-# ---------------------------
-GROQ_API_KEY = st.secrets.get("GROQ_API_KEY", None)
+# App heading
+st.title("📚 HR Knowledge Assistant")
 
-if not GROQ_API_KEY:
-    st.error("Groq API key not found.")
-    st.stop()
+st.write(
+    "Your AI-powered assistant for answering "
+    "employee questions using the HR handbook."
+)
+if st.button("Clear Conversation"):
+    st.session_state.messages = []
+    st.rerun()
 
-client = Groq(api_key=GROQ_API_KEY)
-
-# ---------------------------
-# Vector Database Setup
-# ---------------------------
-@st.cache_resource
-def init_system():
-
-    emb_fn = embedding_functions.SentenceTransformerEmbeddingFunction(
-        model_name="all-MiniLM-L6-v2"
-    )
-
-    chroma_client = chromadb.Client()
-
-    collection = chroma_client.get_or_create_collection(
-        name="hr_db",
-        embedding_function=emb_fn
-    )
-
-    if collection.count() == 0 and os.path.exists("Hrhandbook.txt"):
-
-        with open("Hrhandbook.txt", "r", encoding="utf-8") as f:
-            text = f.read()
-
-        chunks = [
-            chunk.strip()
-            for chunk in text.split("##")
-            if chunk.strip()
-        ]
-
-        collection.add(
-            ids=[f"chunk_{i}" for i in range(len(chunks))],
-            documents=chunks
-        )
-
-    return collection
-
-collection = init_system()
-
-# ---------------------------
-# Chat History
-# ---------------------------
+# Initialize chat history
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+# Display previous messages
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
+st.write("### Try asking:")
 
-# ---------------------------
-# Chat Input
-# ---------------------------
-user_question = st.chat_input(
-    "Ask a question about HR policies..."
-)
+suggestions = [
+    "How many casual leaves are provided per year?",
+    "What is the work-from-home policy?",
+    "How many weeks of maternity leave are provided?",
+    "What are the working hours?"
+]
 
-if user_question:
+for suggestion in suggestions:
+    if st.button(suggestion):
+        st.session_state.selected_question = suggestion
 
+# User input
+question = st.chat_input("Ask a question about HR policies...")
+
+if "selected_question" in st.session_state:
+    question = st.session_state.pop("selected_question")
+
+if question:
+    # Display user question
     st.session_state.messages.append(
-        {
-            "role": "user",
-            "content": user_question
-        }
+        {"role": "user", "content": question}
     )
 
     with st.chat_message("user"):
-        st.markdown(user_question)
+        st.markdown(question)
 
-    # Retrieve relevant handbook chunks
-    results = collection.query(
-        query_texts=[user_question],
-        n_results=3
-    )
-
-    context = "\n".join(results["documents"][0])
-
-    prompt = f"""
-You are an AI HR assistant helping employees understand company policies.
-
-Use ONLY the HR handbook context provided.
-
-Instructions:
-- Answer clearly and professionally
-- Explain policies in simple language
-- Keep responses concise
-- If information is unavailable, say:
-  "I couldn't find that information in the HR handbook."
-
-HR Handbook Context:
-{context}
-
-Employee Question:
-{user_question}
-"""
-
+    # Generate assistant response
     with st.chat_message("assistant"):
-        with st.spinner("Searching handbook..."):
+        with st.spinner("Searching the HR handbook..."):
+            answer = generate_answer(
+                                    question,
+                                    client,
+                                    st.session_state.messages[:-1]
+                                    )
 
-            response = client.chat.completions.create(
-                model="llama-3.1-8b-instant",
-                messages=[
-                    {
-                        "role": "system",
-                        "content": prompt
-                    }
-                ],
-                temperature=0.3
-            )
-
-            answer = response.choices[0].message.content
-
-            st.markdown(answer)
+        st.markdown(answer)
 
     st.session_state.messages.append(
-        {
-            "role": "assistant",
-            "content": answer
-        }
+        {"role": "assistant", "content": answer}
     )
-```
